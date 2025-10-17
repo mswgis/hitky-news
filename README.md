@@ -1,73 +1,73 @@
-# Hitky.com - Breaking News Aggregator
+# React + TypeScript + Vite
 
-A modern news aggregation website that pulls breaking news from multiple sources and displays them in a clean, responsive interface.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
+Currently, two official plugins are available:
 
-- 🔄 Automated news fetching every 15 minutes via Cloudflare Workers
-- 📰 Aggregates from 6 major news APIs
-- 🎯 Focus on US & global political news, events, law, and military
-- 🚀 Deployed on Cloudflare Pages
-- ⚡ Fast, modern UI built with React + TypeScript + Vite
-- 🎨 Beautiful design with TailwindCSS + shadcn/ui
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Tech Stack
+## React Compiler
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: TailwindCSS, shadcn/ui components
-- **Backend**: Cloudflare Workers (scheduled cron jobs)
-- **Storage**: Cloudflare KV
-- **Deployment**: Cloudflare Pages
-- **Icons**: Lucide React
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## News Sources
+## Expanding the ESLint configuration
 
-- NewsAPI.org
-- NewsAPI.ai
-- TheNewsAPI.com
-- GNews.io
-- NewsData.io
-- APITube.io
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Development
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-```bash
-# Install dependencies
-npm install
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Cloudflare Setup
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-### 1. Create KV Namespace
-```bash
-wrangler kv:namespace create "NEWS_ARTICLES"
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-### 2. Deploy Worker
-```bash
-cd worker
-wrangler deploy
-```
-
-### 3. Deploy to Cloudflare Pages
-Connect your GitHub repository to Cloudflare Pages with these settings:
-- **Build command**: `npm run build`
-- **Build output directory**: `dist`
-- **Framework preset**: Vite
-
-## Environment Variables
-
-API keys are stored securely in Cloudflare Workers secrets. Never commit API keys to the repository.
-
-## License
-
-MIT
