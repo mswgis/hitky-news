@@ -263,6 +263,76 @@ async function fetchAPITube(apiKey: string): Promise<NewsArticle[]> {
   }
 }
 
+// Fetch from Reddit (no API key needed for public read)
+async function fetchReddit(): Promise<NewsArticle[]> {
+  try {
+    // Comprehensive subreddit list focused on news and politics
+    const subreddits = [
+      'news', 'worldnews', 'breakingnews', 'qualitynews', 'inthenews',
+      'AnythingGoesNews', 'politics', 'PoliticalDiscussion', 'NeutralPolitics',
+      'geopolitics', 'worldevents', 'technology', 'technews', 'tech',
+      'science', 'Futurology', 'business', 'Economics', 'OutOfTheLoop',
+      'TrueReddit', 'Journalism', 'fednews', 'law', 'anime_titties' // anime_titties is actually world politics
+    ];
+    
+    const allArticles: NewsArticle[] = [];
+    
+    for (const subreddit of subreddits) {
+      const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=15`;
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Hitky News Aggregator/1.0'
+        }
+      });
+      const data = await response.json();
+      
+      if (data.data && data.data.children) {
+        const posts = data.data.children
+          .filter((child: any) => {
+            const post = child.data;
+            // Skip stickied posts, removed posts, and posts without URLs
+            if (post.stickied || !post.url || post.removed) return false;
+            // Skip if it's a reddit self-post without external link
+            if (post.is_self && !post.selftext) return false;
+            return true;
+          })
+          .map((child: any) => {
+            const post = child.data;
+            // For Reddit posts, link to the Reddit discussion page so users can see comments
+            const articleUrl = post.is_self || post.url.includes('reddit.com') 
+              ? `https://reddit.com${post.permalink}`
+              : post.url;
+            
+            return {
+              id: `reddit-${post.id}`,
+              title: post.title,
+              description: post.selftext ? post.selftext.substring(0, 200) : `${post.num_comments} comments on Reddit`,
+              url: articleUrl,
+              urlToImage: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
+              publishedAt: new Date(post.created_utc * 1000).toISOString(),
+              source: {
+                name: `r/${subreddit}`,
+                id: subreddit
+              },
+              author: post.author,
+              content: post.selftext || `Reddit discussion: ${post.num_comments} comments`,
+              category: subreddit
+            };
+          });
+        allArticles.push(...posts);
+      }
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    return allArticles;
+  } catch (error) {
+    console.error('Error fetching from Reddit:', error);
+    return [];
+  }
+}
+
 // Main function to aggregate all news
 async function aggregateNews(env: Env): Promise<void> {
   console.log('Starting news aggregation...');
@@ -276,14 +346,16 @@ async function aggregateNews(env: Env): Promise<void> {
     theNewsAPIArticles,
     newsDataArticles,
     newsAPIAIArticles,
-    apiTubeArticles
+    apiTubeArticles,
+    redditArticles
   ] = await Promise.all([
     fetchNewsAPIOrg(env.NEWSAPI_ORG_KEY),
     fetchGNews(env.GNEWS_KEY),
     fetchTheNewsAPI(env.THENEWSAPI_KEY),
     fetchNewsData(env.NEWSDATA_KEY),
     fetchNewsAPIAI(env.NEWSAPI_AI_KEY),
-    fetchAPITube(env.APITUBE_KEY)
+    fetchAPITube(env.APITUBE_KEY),
+    fetchReddit()
   ]);
   
   allArticles.push(
@@ -292,24 +364,36 @@ async function aggregateNews(env: Env): Promise<void> {
     ...theNewsAPIArticles,
     ...newsDataArticles,
     ...newsAPIAIArticles,
-    ...apiTubeArticles
+    ...apiTubeArticles,
+    ...redditArticles
   );
   
-  // Remove duplicates based on title similarity
-  const uniqueArticles = allArticles.filter((article, index, self) =>
-    index === self.findIndex((a) => 
-      a.title.toLowerCase() === article.title.toLowerCase() ||
-      a.url === article.url
-    )
-  );
+  // Remove duplicates with better similarity detection
+  const uniqueArticles = allArticles.filter((article, index, self) => {
+    // Keep first occurrence
+    return index === self.findIndex((a) => {
+      // Exact URL match
+      if (a.url === article.url) return true;
+      
+      // Exact title match (case insensitive)
+      if (a.title.toLowerCase() === article.title.toLowerCase()) return true;
+      
+      // Similar title match (first 50 chars)
+      const titleA = a.title.toLowerCase().substring(0, 50);
+      const titleB = article.title.toLowerCase().substring(0, 50);
+      if (titleA === titleB && titleA.length > 20) return true;
+      
+      return false;
+    });
+  });
   
   // Sort by published date (newest first)
   uniqueArticles.sort((a, b) => 
     new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   );
   
-  // Take top 100 articles
-  const topArticles = uniqueArticles.slice(0, 100);
+  // Take top 200 articles
+  const topArticles = uniqueArticles.slice(0, 200);
   
   // Store in KV
   await env.NEWS_ARTICLES.put('latest-articles', JSON.stringify({

@@ -44,36 +44,37 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 shadow bg-slate-900">
-        <div className="max-w-7xl mx-auto px-6 py-5 text-white">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/10 p-3 rounded-lg">
-                <Newspaper className="w-7 h-7 text-white" />
+      <header className="sticky top-0 z-50 shadow-lg bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          {/* Top Row - Logo and Refresh */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-600 p-2.5 rounded-lg shadow-lg">
+                <Newspaper className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Hitky</h1>
-                <p className="text-sm text-white/80 mt-0.5">Breaking News & Global Updates</p>
+              <h1 className="text-4xl font-bold text-white tracking-tight">Hitky</h1>
+            </div>
+            <button
+              onClick={fetchNews}
+              disabled={loading}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh News</span>
+            </button>
+          </div>
+          
+          {/* Bottom Row - Subtitle and Last Updated */}
+          <div className="flex items-center justify-between text-white/90 border-t border-white/10 pt-3">
+            <p className="text-base font-medium">Breaking News & Global Updates</p>
+            {lastUpdated && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-white/60">Last Updated:</span>
+                <span className="font-semibold text-blue-400">
+                  {new Date(lastUpdated).toLocaleString()}
+                </span>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              {lastUpdated && (
-                <div className="text-right hidden md:block">
-                  <p className="text-xs text-white/60">Last Updated</p>
-                  <p className="text-sm text-white/90 font-medium">
-                    {new Date(lastUpdated).toLocaleString()}
-                  </p>
-                </div>
-              )}
-              <button
-                onClick={fetchNews}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-white/30 bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </header>
