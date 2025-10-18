@@ -32,7 +32,7 @@ async function fetchNewsAPIOrg(apiKey: string): Promise<NewsArticle[]> {
     const allArticles: NewsArticle[] = [];
     
     // US Politics
-    const usUrl = `https://newsapi.org/v2/top-headlines?country=us&category=politics&pageSize=30&apiKey=${apiKey}`;
+    const usUrl = `https://newsapi.org/v2/top-headlines?country=us&category=politics&language=en&pageSize=50&apiKey=${apiKey}`;
     const usResponse = await fetch(usUrl);
     const usData = await usResponse.json();
     if (usData.articles) {
@@ -53,7 +53,7 @@ async function fetchNewsAPIOrg(apiKey: string): Promise<NewsArticle[]> {
     // Global news with keywords
     const keywords = ['Russia', 'China', 'Middle East', 'Ukraine', 'Israel', 'Iran', 'Syria'];
     for (const keyword of keywords) {
-      const globalUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(keyword)}&language=en&sortBy=publishedAt&pageSize=10&apiKey=${apiKey}`;
+      const globalUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(keyword)}&language=en&sortBy=publishedAt&pageSize=15&apiKey=${apiKey}`;
       const response = await fetch(globalUrl);
       const data = await response.json();
       if (data.articles) {
@@ -86,7 +86,7 @@ async function fetchGNews(apiKey: string): Promise<NewsArticle[]> {
     const allArticles: NewsArticle[] = [];
     
     for (const topic of topics) {
-      const url = `https://gnews.io/api/v4/top-headlines?category=${topic}&lang=en&country=us&max=10&apikey=${apiKey}`;
+      const url = `https://gnews.io/api/v4/top-headlines?category=${topic}&lang=en&country=us&max=15&apikey=${apiKey}`;
       const response = await fetch(url);
       const data = await response.json();
       
@@ -124,7 +124,7 @@ async function fetchTheNewsAPI(apiKey: string): Promise<NewsArticle[]> {
     const allArticles: NewsArticle[] = [];
     
     for (const category of categories) {
-      const url = `https://api.thenewsapi.com/v1/news/top?api_token=${apiKey}&locale=us&categories=${category}&limit=15`;
+      const url = `https://api.thenewsapi.com/v1/news/top?api_token=${apiKey}&locale=us&language=en&categories=${category}&limit=20`;
       const response = await fetch(url);
       const data = await response.json();
       
@@ -157,7 +157,7 @@ async function fetchTheNewsAPI(apiKey: string): Promise<NewsArticle[]> {
 // Fetch from NewsData.io
 async function fetchNewsData(apiKey: string): Promise<NewsArticle[]> {
   try {
-    const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&country=us&language=en&category=politics,top&size=20`;
+    const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&country=us&language=en&category=politics,top,world&size=30`;
     const response = await fetch(url);
     const data = await response.json();
     
@@ -200,7 +200,7 @@ async function fetchNewsAPIAI(apiKey: string): Promise<NewsArticle[]> {
         sourceLocationUri: 'http://en.wikipedia.org/wiki/United_States',
         lang: 'eng',
         articlesPage: 1,
-        articlesCount: 20,
+        articlesCount: 30,
         articlesSortBy: 'date',
         resultType: 'articles'
       })
@@ -235,7 +235,7 @@ async function fetchNewsAPIAI(apiKey: string): Promise<NewsArticle[]> {
 // Fetch from APITube.io
 async function fetchAPITube(apiKey: string): Promise<NewsArticle[]> {
   try {
-    const url = `https://api.apitube.io/v1/news/everything?q=politics OR breaking&language=en&sortBy=publishedAt&apiKey=${apiKey}`;
+    const url = `https://api.apitube.io/v1/news/everything?q=politics OR breaking&language=en&sortBy=publishedAt&pageSize=30&apiKey=${apiKey}`;
     const response = await fetch(url);
     const data = await response.json();
     
@@ -261,6 +261,26 @@ async function fetchAPITube(apiKey: string): Promise<NewsArticle[]> {
     console.error('Error fetching from APITube:', error);
     return [];
   }
+}
+
+// Helper function to detect if text is in English
+function isEnglish(text: string): boolean {
+  if (!text) return true; // Allow if no text
+  
+  // Check for common Spanish/non-English characters and patterns
+  const nonEnglishPatterns = [
+    /[áéíóúñü]/i, // Spanish accented characters
+    /[àèìòù]/i,   // French/Italian accents
+    /[äöüß]/i,    // German characters
+    /[çğışö]/i,   // Turkish characters
+    /[\u0400-\u04FF]/, // Cyrillic
+    /[\u4E00-\u9FFF]/, // Chinese
+    /[\u3040-\u309F\u30A0-\u30FF]/, // Japanese
+    /[\uAC00-\uD7AF]/  // Korean
+  ];
+  
+  // If any non-English pattern is found, it's not English
+  return !nonEnglishPatterns.some(pattern => pattern.test(text));
 }
 
 // Fetch from Reddit (no API key needed for public read)
@@ -384,8 +404,13 @@ async function aggregateNews(env: Env): Promise<void> {
     ...redditArticles
   );
   
+  // Filter out non-English articles
+  const englishArticles = allArticles.filter(article => 
+    isEnglish(article.title) && isEnglish(article.description)
+  );
+  
   // Remove duplicates with better similarity detection
-  const uniqueArticles = allArticles.filter((article, index, self) => {
+  const uniqueArticles = englishArticles.filter((article, index, self) => {
     // Keep first occurrence
     return index === self.findIndex((a) => {
       // Exact URL match
