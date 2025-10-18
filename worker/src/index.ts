@@ -29,31 +29,46 @@ interface NewsArticle {
 // Fetch from NewsAPI.org
 async function fetchNewsAPIOrg(apiKey: string): Promise<NewsArticle[]> {
   try {
-    const categories = ['politics', 'general'];
     const allArticles: NewsArticle[] = [];
     
-    for (const category of categories) {
-      const url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&pageSize=20&apiKey=${apiKey}`;
-      const response = await fetch(url);
+    // US Politics
+    const usUrl = `https://newsapi.org/v2/top-headlines?country=us&category=politics&pageSize=30&apiKey=${apiKey}`;
+    const usResponse = await fetch(usUrl);
+    const usData = await usResponse.json();
+    if (usData.articles) {
+      allArticles.push(...usData.articles.map((article: any) => ({
+        id: `newsapi-org-${article.url}`,
+        title: article.title,
+        description: article.description || '',
+        url: article.url,
+        urlToImage: article.urlToImage,
+        publishedAt: article.publishedAt,
+        source: { name: article.source.name, id: article.source.id },
+        author: article.author,
+        content: article.content,
+        category: 'US Politics'
+      })));
+    }
+    
+    // Global news with keywords
+    const keywords = ['Russia', 'China', 'Middle East', 'Ukraine', 'Israel', 'Iran', 'Syria'];
+    for (const keyword of keywords) {
+      const globalUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(keyword)}&language=en&sortBy=publishedAt&pageSize=10&apiKey=${apiKey}`;
+      const response = await fetch(globalUrl);
       const data = await response.json();
-      
       if (data.articles) {
-        const articles = data.articles.map((article: any) => ({
-          id: `newsapi-org-${article.url}`,
+        allArticles.push(...data.articles.map((article: any) => ({
+          id: `newsapi-org-${keyword}-${article.url}`,
           title: article.title,
           description: article.description || '',
           url: article.url,
           urlToImage: article.urlToImage,
           publishedAt: article.publishedAt,
-          source: {
-            name: article.source.name,
-            id: article.source.id
-          },
+          source: { name: article.source.name, id: article.source.id },
           author: article.author,
           content: article.content,
-          category: category
-        }));
-        allArticles.push(...articles);
+          category: keyword
+        })));
       }
     }
     

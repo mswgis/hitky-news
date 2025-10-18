@@ -45,31 +45,36 @@ function App() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="sticky top-0 z-50 shadow bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 py-4 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/10 p-2 rounded-md">
-                <Newspaper className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-6 py-5 text-white">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-white/10 p-3 rounded-lg">
+                <Newspaper className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Hitky</h1>
-                <p className="text-xs text-white/70">Breaking News & Updates</p>
+                <h1 className="text-3xl font-bold tracking-tight">Hitky</h1>
+                <p className="text-sm text-white/80 mt-0.5">Breaking News & Global Updates</p>
               </div>
             </div>
-            <button
-              onClick={fetchNews}
-              disabled={loading}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-md border border-white/30 bg-white/10 hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
+            <div className="flex items-center gap-4">
+              {lastUpdated && (
+                <div className="text-right hidden md:block">
+                  <p className="text-xs text-white/60">Last Updated</p>
+                  <p className="text-sm text-white/90 font-medium">
+                    {new Date(lastUpdated).toLocaleString()}
+                  </p>
+                </div>
+              )}
+              <button
+                onClick={fetchNews}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-white/30 bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+            </div>
           </div>
-          {lastUpdated && (
-            <p className="text-xs text-white/70 mt-2">
-              Last updated: {new Date(lastUpdated).toLocaleString()}
-            </p>
-          )}
         </div>
       </header>
 
@@ -104,11 +109,17 @@ function App() {
           </div>
         ) : (
           <>
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Latest Headlines</h2>
-              <p className="text-slate-600">
-                {articles.length} article{articles.length !== 1 ? 's' : ''} from trusted sources
-              </p>
+            <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900">Latest Headlines</h2>
+                <p className="text-slate-600 mt-1">
+                  {articles.length} article{articles.length !== 1 ? 's' : ''} from trusted global sources
+                </p>
+              </div>
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-slate-500 uppercase tracking-wide">Coverage</p>
+                <p className="text-sm font-semibold text-slate-700">US Politics • Global Events • Russia • China • Middle East</p>
+              </div>
             </div>
             {/* Table View */}
             <div className="bg-white rounded-lg shadow ring-1 ring-slate-200 overflow-hidden">
