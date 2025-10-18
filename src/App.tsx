@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Newspaper, RefreshCw, AlertCircle } from 'lucide-react';
-import { NewsCard } from './components/NewsCard';
+import { Newspaper, RefreshCw, AlertCircle, ExternalLink } from 'lucide-react';
 import { NewsArticle } from './types/news';
 
 function App() {
@@ -111,10 +110,88 @@ function App() {
                 {articles.length} article{articles.length !== 1 ? 's' : ''} from trusted sources
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles.map((article) => (
-                <NewsCard key={article.id} article={article} />
-              ))}
+            {/* Table View */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Headline
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Source
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Published
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Link
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {articles.map((article) => (
+                      <tr key={article.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-3">
+                            {article.urlToImage && (
+                              <img
+                                src={article.urlToImage}
+                                alt=""
+                                className="w-20 h-14 object-cover rounded flex-shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a
+                                href={article.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-medium text-gray-900 hover:text-primary line-clamp-2"
+                              >
+                                {article.title}
+                              </a>
+                              {article.description && (
+                                <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                                  {article.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-medium text-primary">
+                            {article.source.name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500">
+                            {new Date(article.publishedAt).toLocaleDateString()}
+                          </span>
+                          <br />
+                          <span className="text-xs text-gray-400">
+                            {new Date(article.publishedAt).toLocaleTimeString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/80 inline-flex items-center gap-1"
+                          >
+                            Read
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}
