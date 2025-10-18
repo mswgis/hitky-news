@@ -35,6 +35,12 @@ async function fetchNewsAPIOrg(apiKey: string): Promise<NewsArticle[]> {
     const usUrl = `https://newsapi.org/v2/top-headlines?country=us&category=politics&language=en&pageSize=50&apiKey=${apiKey}`;
     const usResponse = await fetch(usUrl);
     const usData = await usResponse.json();
+    
+    if (usData.status === 'error') {
+      console.error('NewsAPI.org error:', usData.message);
+      return [];
+    }
+    
     if (usData.articles) {
       allArticles.push(...usData.articles.map((article: any) => ({
         id: `newsapi-org-${article.url}`,
@@ -161,7 +167,7 @@ async function fetchNewsData(apiKey: string): Promise<NewsArticle[]> {
     const response = await fetch(url);
     const data = await response.json();
     
-    if (data.results) {
+    if (data.results && Array.isArray(data.results)) {
       return data.results.map((article: any) => ({
         id: `newsdata-${article.article_id}`,
         title: article.title,
@@ -306,13 +312,27 @@ async function fetchReddit(): Promise<NewsArticle[]> {
     const allArticles: NewsArticle[] = [];
     
     for (const subreddit of subreddits) {
-      const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=20`;
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Hitky News Aggregator/1.0'
+      try {
+        const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=20`;
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Hitky News Aggregator/1.0'
+          }
+        });
+        
+        // Check if response is OK and is JSON
+        if (!response.ok) {
+          console.log(`Reddit ${subreddit}: HTTP ${response.status}`);
+          continue;
         }
-      });
-      const data = await response.json();
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.log(`Reddit ${subreddit}: Not JSON response`);
+          continue;
+        }
+        
+        const data = await response.json();
       
       if (data.data && data.data.children) {
         const posts = data.data.children
@@ -360,6 +380,10 @@ async function fetchReddit(): Promise<NewsArticle[]> {
       
       // Small delay to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (subredditError) {
+        console.log(`Error fetching r/${subreddit}:`, subredditError);
+        continue;
+      }
     }
     
     return allArticles;
@@ -375,24 +399,24 @@ async function aggregateNews(env: Env): Promise<void> {
   
   const allArticles: NewsArticle[] = [];
   
-  // Fetch from all sources in parallel
+  // Fetch from all sources in parallel (Reddit temporarily disabled due to 403 blocks)
   const [
     newsAPIArticles,
     gNewsArticles,
     theNewsAPIArticles,
     newsDataArticles,
     newsAPIAIArticles,
-    apiTubeArticles,
-    redditArticles
+    apiTubeArticles
   ] = await Promise.all([
     fetchNewsAPIOrg(env.NEWSAPI_ORG_KEY),
     fetchGNews(env.GNEWS_KEY),
     fetchTheNewsAPI(env.THENEWSAPI_KEY),
     fetchNewsData(env.NEWSDATA_KEY),
     fetchNewsAPIAI(env.NEWSAPI_AI_KEY),
-    fetchAPITube(env.APITUBE_KEY),
-    fetchReddit()
+    fetchAPITube(env.APITUBE_KEY)
   ]);
+  
+  console.log(`API Results: NewsAPI.org=${newsAPIArticles.length}, GNews=${gNewsArticles.length}, TheNewsAPI=${theNewsAPIArticles.length}, NewsData=${newsDataArticles.length}, NewsAPI.ai=${newsAPIAIArticles.length}, APITube=${apiTubeArticles.length}`);
   
   allArticles.push(
     ...newsAPIArticles,
@@ -400,13 +424,14 @@ async function aggregateNews(env: Env): Promise<void> {
     ...theNewsAPIArticles,
     ...newsDataArticles,
     ...newsAPIAIArticles,
-    ...apiTubeArticles,
-    ...redditArticles
+    ...apiTubeArticles
   );
   
-  // Filter out non-English articles
+  console.log(`Fetched ${allArticles.length} total articles before filtering`);
+  
+  // Filter out non-English articles (only check title, description can be empty)
   const englishArticles = allArticles.filter(article => 
-    isEnglish(article.title) && isEnglish(article.description)
+    isEnglish(article.title)
   );
   
   // Remove duplicates with better similarity detection
