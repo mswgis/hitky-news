@@ -266,7 +266,7 @@ async function fetchAPITube(apiKey: string): Promise<NewsArticle[]> {
 // Fetch from Reddit (no API key needed for public read)
 async function fetchReddit(): Promise<NewsArticle[]> {
   try {
-    // Comprehensive subreddit list focused on news and politics
+    // Comprehensive subreddit list focused on news and politics (NO ENTERTAINMENT/SPORTS)
     const subreddits = [
       'news', 'worldnews', 'breakingnews', 'qualitynews', 'inthenews',
       'AnythingGoesNews', 'politics', 'PoliticalDiscussion', 'NeutralPolitics',
@@ -275,10 +275,18 @@ async function fetchReddit(): Promise<NewsArticle[]> {
       'TrueReddit', 'Journalism', 'fednews', 'law', 'anime_titties' // anime_titties is actually world politics
     ];
     
+    // Keywords to filter out entertainment/sports content
+    const excludeKeywords = [
+      'movie', 'film', 'actor', 'actress', 'celebrity', 'album', 'song', 'music',
+      'concert', 'tour', 'grammy', 'oscar', 'emmy', 'nfl', 'nba', 'mlb', 'nhl',
+      'soccer', 'football', 'basketball', 'baseball', 'hockey', 'sports', 'game',
+      'playoff', 'championship', 'super bowl', 'world series', 'world cup'
+    ];
+    
     const allArticles: NewsArticle[] = [];
     
     for (const subreddit of subreddits) {
-      const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=15`;
+      const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=20`;
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Hitky News Aggregator/1.0'
@@ -294,6 +302,14 @@ async function fetchReddit(): Promise<NewsArticle[]> {
             if (post.stickied || !post.url || post.removed) return false;
             // Skip if it's a reddit self-post without external link
             if (post.is_self && !post.selftext) return false;
+            
+            // Filter out entertainment/sports content
+            const titleLower = post.title.toLowerCase();
+            const hasExcludedKeyword = excludeKeywords.some(keyword => 
+              titleLower.includes(keyword.toLowerCase())
+            );
+            if (hasExcludedKeyword) return false;
+            
             return true;
           })
           .map((child: any) => {

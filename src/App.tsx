@@ -138,6 +138,9 @@ function App() {
                         Published
                       </th>
                       <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
+                        Discussion
+                      </th>
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Image
                       </th>
                       <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
@@ -176,6 +179,21 @@ function App() {
                           <span className="text-[11px] text-slate-400">
                             {new Date(article.publishedAt).toLocaleTimeString()}
                           </span>
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap align-top text-center">
+                          {article.source.name.startsWith('r/') ? (
+                            <a
+                              href={`https://reddit.com/${article.source.name}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 font-medium"
+                            >
+                              Reddit
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">-</span>
+                          )}
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap align-top text-center">
                           {article.urlToImage ? (
