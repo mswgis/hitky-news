@@ -126,7 +126,10 @@ function App() {
                         Published
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Link
+                        Image
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Article
                       </th>
                     </tr>
                   </thead>
@@ -134,33 +137,14 @@ function App() {
                     {articles.map((article) => (
                       <tr key={article.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="flex items-start gap-3">
-                            {article.urlToImage && (
-                              <img
-                                src={article.urlToImage}
-                                alt=""
-                                className="w-20 h-14 object-cover rounded flex-shrink-0"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <a
-                                href={article.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm font-medium text-gray-900 hover:text-primary line-clamp-2"
-                              >
-                                {article.title}
-                              </a>
-                              {article.description && (
-                                <p className="mt-1 text-xs text-gray-500 line-clamp-2">
-                                  {article.description}
-                                </p>
-                              )}
-                            </div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {article.title}
                           </div>
+                          {article.description && (
+                            <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                              {article.description}
+                            </p>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-medium text-primary">
@@ -176,12 +160,27 @@ function App() {
                             {new Date(article.publishedAt).toLocaleTimeString()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          {article.urlToImage ? (
+                            <a
+                              href={article.urlToImage}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-sm"
+                            >
+                              View
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
                           <a
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:text-primary/80 inline-flex items-center gap-1"
+                            className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-sm font-medium"
                           >
                             Read
                             <ExternalLink className="w-4 h-4" />
