@@ -44,29 +44,29 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-600 sticky top-0 z-50 shadow">
-        <div className="container mx-auto px-4 py-4 text-white">
+      <header className="sticky top-0 z-50 shadow bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 py-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg">
+              <div className="bg-white/10 p-2 rounded-md">
                 <Newspaper className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Hitky</h1>
-                <p className="text-xs text-white/80">Breaking News & Updates</p>
+                <h1 className="text-2xl font-semibold tracking-tight">Hitky</h1>
+                <p className="text-xs text-white/70">Breaking News & Updates</p>
               </div>
             </div>
             <button
               onClick={fetchNews}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/40 bg-white/10 hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-md border border-white/30 bg-white/10 hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
           {lastUpdated && (
-            <p className="text-xs text-white/80 mt-2">
+            <p className="text-xs text-white/70 mt-2">
               Last updated: {new Date(lastUpdated).toLocaleString()}
             </p>
           )}
@@ -74,10 +74,10 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {loading && articles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <RefreshCw className="w-12 h-12 text-primary animate-spin mb-4" />
+            <RefreshCw className="w-12 h-12 text-slate-700 animate-spin mb-4" />
             <p className="text-lg text-slate-600">Loading latest news...</p>
           </div>
         ) : error ? (
@@ -111,81 +111,81 @@ function App() {
               </p>
             </div>
             {/* Table View */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow ring-1 ring-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-blue-600">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-800 text-white">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Headline
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Source
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Published
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Image
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                      <th scope="col" className="px-5 py-3 text-left font-semibold uppercase tracking-wide text-[11px] sticky top-0 z-10">
                         Article
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
+                  <tbody className="bg-white divide-y divide-slate-100">
                     {articles.map((article, idx) => (
-                      <tr key={article.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50 hover:bg-slate-100'}>
-                        <td className="px-6 py-4 align-top">
+                      <tr key={article.id} className={`even:bg-slate-50 hover:bg-slate-100`}>
+                        <td className="px-5 py-3 align-top max-w-3xl">
                           <a
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-semibold text-slate-900 hover:text-blue-700 hover:underline"
+                            className="font-semibold text-slate-900 hover:text-blue-700 hover:underline"
                           >
                             {article.title}
                           </a>
                           {article.description && (
-                            <p className="mt-1 text-xs text-slate-600 line-clamp-2">
+                            <p className="mt-1 text-xs text-slate-600 truncate">
                               {article.description}
                             </p>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1">
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <span className="source-badge">
                             {article.source.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap align-top">
-                          <span className="text-sm text-slate-600">
+                        <td className="px-5 py-3 whitespace-nowrap align-top">
+                          <span className="text-slate-600">
                             {new Date(article.publishedAt).toLocaleDateString()}
                           </span>
                           <br />
-                          <span className="text-xs text-slate-400">
+                          <span className="text-[11px] text-slate-400">
                             {new Date(article.publishedAt).toLocaleTimeString()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap align-top text-center">
+                        <td className="px-5 py-3 whitespace-nowrap align-top text-center">
                           {article.urlToImage ? (
                             <a
                               href={article.urlToImage}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-700 hover:text-blue-800 inline-flex items-center gap-1 text-sm"
+                              className="text-blue-700 hover:text-blue-800 inline-flex items-center gap-1"
                             >
                               View
                               <ExternalLink className="w-3 h-3" />
                             </a>
                           ) : (
-                            <span className="text-xs text-gray-400">-</span>
+                            <span className="text-[11px] text-slate-400">-</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap align-top text-center">
+                        <td className="px-5 py-3 whitespace-nowrap align-top text-center">
                           <a
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-700 hover:text-blue-800 inline-flex items-center gap-1 text-sm font-medium"
+                            className="text-blue-700 hover:text-blue-800 inline-flex items-center gap-1 font-medium"
                           >
                             Read
                             <ExternalLink className="w-4 h-4" />
